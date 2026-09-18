@@ -11,8 +11,8 @@ import { createServer, type Server } from "node:http";
 import { TelegramClient, Api } from "teleproto";
 import { StringSession } from "teleproto/sessions";
 import { NewMessage, EditedMessage } from "teleproto/events";
-import { Pool } from "pg";
 
+import { db } from "./db";
 import { prefilter } from "./prefilter";
 import { buildOllamaBody } from "./ollamaBody";
 import { validate } from "./validate";
@@ -29,8 +29,6 @@ const CALLBACK_BIND   = process.env.CALLBACK_BIND ?? "0.0.0.0";   // container-i
 const CALLBACK_PORT   = Number(process.env.CALLBACK_PORT ?? 8787);
 const HEALTH_STALE_MS = Number(process.env.HEALTH_STALE_MIN ?? 30) * 60_000;
 const REPOST_MIN_CONF = Number(process.env.REPOST_MIN_CONFIDENCE ?? 0.7);
-
-export const db = new Pool({ connectionString: process.env.DATABASE_URL });
 
 const client = new TelegramClient(
   new StringSession(process.env.TG_SESSION ?? ""),   // from the one-time login script

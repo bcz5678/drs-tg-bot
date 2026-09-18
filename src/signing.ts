@@ -12,10 +12,12 @@ export function sign(payload: unknown) {
   return { ts, data, sig };
 }
 
-export function verify(env: { ts: number; data: string; sig: string }) {
-  if (!env?.data || !env?.sig || !Number.isInteger(env.ts)) return null;
-  if (Math.abs(Date.now() / 1000 - env.ts) > MAX_SKEW_S) return null;   // replay window
-  const expected = createHmac("sha256", SECRET).update(`${env.ts}.${env.data}`).digest();
+export function verify(input: unknown) {
+  const env = input as { ts?: unknown; data?: unknown; sig?: unknown } | null;
+  if (typeof env?.data !== "string" || typeof env?.sig !== "string" || !Number.isInteger(env.ts)) return null;
+  const ts = env.ts as number;
+  if (Math.abs(Date.now() / 1000 - ts) > MAX_SKEW_S) return null;   // replay window
+  const expected = createHmac("sha256", SECRET).update(`${ts}.${env.data}`).digest();
   const given = Buffer.from(env.sig, "hex");
   if (given.length !== expected.length || !timingSafeEqual(given, expected)) return null;
   return JSON.parse(env.data);
